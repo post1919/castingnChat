@@ -1,0 +1,1091 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="castingn.com.chat.mapper.chat.ChatMapper">
+
+	<update id="updateAvgResponseTime" parameterType="map">
+		/* 평균 응답률갱신 */
+		UPDATE CHAT_RESPONSE_TIME SET CRT_R_TIME = #{rTime} WHERE CRT_U_PK = #{pks}
+	</update>
+
+	<insert id="insertAvgResponseTime" parameterType="map">
+		INSERT INTO CHAT_RESPONSE_TIME ( CRT_U_PK, CRT_R_TIME ) VALUES ( #{pks}, #{rTime} )
+	</insert>
+	
+	<insert id="insertAvgResTime" parameterType="map">
+		/* 평균 응답률추가 */
+		UPDATE CHAT_USER SET CU_R_TIME=#{rTime}, CU_F_TIME=NOW() 
+		WHERE CU_PK=#{CU_PK}		
+	</insert>
+
+	<select id="getAvgResponse" parameterType="map" resultType="map">
+		/* 평균 응답률얻기 */
+		SELECT
+		*
+		FROM CHAT_RESPONSE_TIME
+		WHERE 1 = 1
+		AND CRT_U_PK = #{pks}
+	</select>
+
+	<select id="getChatInRoom" parameterType="map" resultType="map">
+		/* 방에 채팅 얻기 */
+		SELECT
+			*
+		FROM CHAT_DETAIL
+		WHERE R_CM_PK = #{cmPk}
+		<!-- AND (CD_CHAT_STAT='FILE' OR CD_CHAT_STAT='CHAT') -->
+		AND ${where}
+	</select>
+
+	<!-- 중요 메세지 갯수 -->
+	<select id="getImportantCnt" parameterType="map" resultType="int">
+		SELECT
+		COUNT(*) READ_CNT
+		FROM CHAT_LIKE
+		WHERE 1 = 1
+		AND CL_U_PK = #{uPk}		
+	</select>
+
+	<!-- 메세지검색 -->
+	<select id="getChatListByMessageType" parameterType="map" resultType="map">
+	/* getChatListByMessageType - 메시지 검색  */
+				
+		<!-- SELECT
+		'' AS U_NAME
+		, '' AS U_PICTURE
+		, '' AS U_ID
+		, '' AS U_TYPE
+		, CD.CD_U_PK
+		, CD.CD_CONTENT
+		, CD.CD_ORG_FILE_NM
+		, CD.CD_NEW_FILE_NM
+		, CD.CD_FILE_PATH
+		, CD.CD_CHAT_STAT
+		, CD.CD_MSG_TYPE
+		, CM.CM_P_PK
+		, CM.CM_PU_PK
+		, CM.R_STND_CD
+		, CM.CM_CHAT_TYPE
+		, CU.CU_SVC_CD		 
+		, DATE_FORMAT(CD.CD_INDATE,"%y.%m.%d") AS CD_INDATE
+		, CD.CD_PK
+		, CM.CM_PK
+		, (SELECT COUNT(*) FROM CHAT_LIKE WHERE CL_CD_PK = CD.CD_PK AND CL_U_PK = #{uPk}) AS CD_LIKE_CNT
+		FROM CHAT_DETAIL CD
+		LEFT OUTER JOIN CHAT_MASTER CM ON CD.R_CM_PK = CM.CM_PK
+		LEFT JOIN CHAT_USER AS CU ON CU.R_CM_PK = CM.CM_PK AND CU.CU_U_PK = CD.CD_U_PK
+		LEFT JOIN CHAT_DETAIL_READ AS CDR ON CDR.R_CD_PK = CD.CD_PK
+		LEFT JOIN CHAT_LIKE AS CL ON CL.CL_CD_PK = CD.CD_PK
+		WHERE 1 = 1
+		AND (CD.CD_CHAT_STAT='FILE' OR CD.CD_CHAT_STAT='CHAT')
+		AND ${where}
+		ORDER BY CD_PK -->
+		
+		SELECT 
+			CUM.CU_U_NAME AS U_NAME
+			, CUM.CU_U_LOGO AS U_PICTURE
+			, CUM.CU_U_PK AS U_ID
+			, CUM.CU_U_TYPE AS U_TYPE
+			,(SELECT CU_U_NAME  FROM CHAT_USER A WHERE A.R_CM_PK = CD.R_CM_PK AND A.CU_U_TYPE = #{userType} LIMIT 1) AS YOUR_NAME
+			,(SELECT max(CU_U_LOGO) FROM CHAT_USER A WHERE A.R_CM_PK = CD.R_CM_PK AND A.CU_U_TYPE = #{userType}) AS YOUR_PICTURE
+			, CD.CD_U_PK
+			, CD.CD_CONTENT
+			, CD.CD_ORG_FILE_NM
+			, CD.CD_NEW_FILE_NM
+			, CD.CD_FILE_PATH
+			, CD.CD_CHAT_STAT
+			, CD.CD_MSG_TYPE
+			, CUM.CM_P_PK
+			, CUM.CM_PU_PK
+			, CUM.R_STND_CD
+			, CUM.CM_CHAT_TYPE
+			, CUM.CU_SVC_CD		 
+			, DATE_FORMAT(CD.CD_INDATE,"%y.%m.%d") AS CD_INDATE
+			, CD.CD_PK
+			, CUM.CM_PK
+			, (SELECT COUNT(*) FROM CHAT_LIKE WHERE CL_CD_PK = CD.CD_PK AND CL_U_PK = #{uPk}) AS CD_LIKE_CNT
+		FROM CHAT_DETAIL CD 
+		LEFT OUTER JOIN (
+			SELECT * FROM CHAT_MASTER CM LEFT JOIN CHAT_USER CU ON CM.CM_PK=CU.R_CM_PK WHERE CU.CU_U_PK= #{uPk}
+		) CUM ON CD.R_CM_PK=CUM.CM_PK
+		LEFT JOIN CHAT_DETAIL_READ AS CDR ON CDR.R_CD_PK = CD.CD_PK
+		LEFT JOIN CHAT_LIKE AS CL ON CL.CL_CD_PK = CD.CD_PK
+		WHERE (CD.CD_CHAT_STAT='FILE' OR CD.CD_CHAT_STAT='CHAT') AND CD.R_CM_PK=CUM.CM_PK
+		AND ${where}
+		GROUP BY CUM.CM_PK
+		ORDER BY CD_INDATE DESC, CD_PK DESC
+		
+	</select>
+
+	<!--	찜하기 추가-->
+	<insert id="likeChatInsert" parameterType="map">
+		INSERT INTO CHAT_LIKE ( CL_U_PK, CL_CD_PK ) VALUES ( #{uPk}, #{cPk} )
+	</insert>
+
+	<!--	찜하기 삭제-->
+	<delete id="likeChatDelete" parameterType="map">
+		DELETE FROM CHAT_LIKE WHERE CL_U_PK = #{uPk} AND CL_CD_PK = #{cPk}
+	</delete>
+
+	<!-- 검색 -->
+	<select id="search" parameterType="map" resultType="map">
+		<!-- SELECT
+		  CD.CD_U_PK
+		, CD.CD_CONTENT
+		, CD.CD_ORG_FILE_NM
+		, CD.CD_NEW_FILE_NM
+		, CD.CD_FILE_PATH
+		, CD.CD_CHAT_STAT
+		, CD.CD_MSG_TYPE
+		, DATE_FORMAT(CD.CD_INDATE,"%y.%m.%d") AS CD_INDATE
+		, CD.CD_PK
+		, CM.CM_PK
+		, (SELECT COUNT(*) FROM CHAT_LIKE WHERE CL_CD_PK = CD.CD_PK AND CL_U_PK = #{uPk}) AS CD_LIKE_CNT
+		FROM CHAT_DETAIL CD
+		LEFT OUTER JOIN
+		CHAT_MASTER CM
+		ON CD.R_CM_PK = CM.CM_PK
+		LEFT JOIN CHAT_USER AS CU ON CU.R_CM_PK = CM.CM_PK AND CU.CU_U_PK = CD.CD_U_PK
+		WHERE 1 = 1		
+		AND (CD.CD_CHAT_STAT='FILE' OR CD.CD_CHAT_STAT='CHAT')
+		<if test="query != ''">
+			AND (CD.CD_CONTENT LIKE '%${query}%' OR CD.CD_ORG_FILE_NM LIKE '%${query}%')
+		</if>
+		<if test="query == ''">
+			AND 1 = 2
+		</if>
+		ORDER BY CD_PK -->
+		
+		SELECT 
+		Y.CU_U_NAME AS U_NAME
+		, Y.CU_U_LOGO AS U_PICTURE
+		, Y.CU_U_PK AS U_ID
+		, Y.CU_U_TYPE AS U_TYPE
+		, Y.CM_PK
+		, Y.R_STND_CD
+		, Y.CM_P_PK
+		, Y.CM_PU_PK
+		, Y.CM_CHAT_TYPE
+		, Y.CM_U_PK
+		, Y.CU_SVC_CD
+		, X.CD_U_PK
+		, X.CD_CONTENT
+		, X.CD_ORG_FILE_NM
+		, X.CD_NEW_FILE_NM
+		, X.CD_FILE_PATH
+		, X.CD_CHAT_STAT
+		, X.CD_MSG_TYPE
+		, DATE_FORMAT(X.CD_INDATE,"%y.%m.%d") AS CD_INDATE
+		, X.CD_PK
+		, (SELECT COUNT(*) FROM CHAT_LIKE WHERE CL_CD_PK = X.CD_PK AND CL_U_PK = #{uPk}) AS CD_LIKE_CNT	
+		FROM 
+		CHAT_DETAIL X LEFT JOIN	
+		( SELECT * FROM CHAT_USER A LEFT JOIN CHAT_MASTER B ON A.R_CM_PK = B.CM_PK	WHERE CU_U_PK = #{uPk} ) Y
+		ON Y.R_CM_PK = X.R_CM_PK
+		WHERE Y.CM_PK=X.R_CM_PK AND X.CD_CHAT_STAT IN ('CHAT', 'FILE') 
+		<if test="query != ''">
+			AND (X.CD_CONTENT LIKE '%${query}%' OR X.CD_ORG_FILE_NM LIKE '%${query}%')
+		</if>
+		GROUP BY Y.CM_PK		
+		ORDER BY CD_INDATE DESC, CD_PK DESC
+	</select>
+
+
+
+
+	<!-- 메모 내역 조회  -->
+	<select id="selectMemo" parameterType="map" resultType="map">
+		SELECT MM_PK, MM_CONTENTS, DATE_FORMAT(MM_INDATE,"%Y.%m.%d") AS MM_INDATE FROM CHAT_MEMO
+		<if test="isGroup == true">
+			GROUP BY DATE(MM_INDATE)
+		</if>
+		<if test="isGroup == false">
+			WHERE DATE(MM_INDATE) = DATE(#{inDate})
+		</if>
+	</select>
+
+	<!--	메모 추가-->
+	<insert id="addMemo" parameterType="map">
+		INSERT INTO
+			CHAT_MEMO
+			(
+				MM_CONTENTS
+			)
+			VALUES
+			(
+				#{content}
+			)
+	</insert>
+
+	<!--	메모 삭제-->
+	<delete id="deleteMemo" parameterType="map">
+		DELETE FROM CHAT_MEMO WHERE MM_PK = ${mmPK}
+	</delete>
+
+	<insert id="insertChatMaster" parameterType="map">
+		/* insertChatMaster - 채팅방 생성  */
+		INSERT INTO
+			CHAT_MASTER
+			(
+				CM_PK
+			  ,	R_STND_CD			  
+			  , CM_CHAT_TYPE
+			  , CM_INDATE
+			  , CM_P_PK
+			  , CM_U_PK
+			  , CM_PU_PK
+			) 
+			VALUES
+			(
+				#{cmPk}
+			  ,	#{stndCd}			  
+			  , #{cmChatType}
+			  , now()
+			  , #{pUpk}
+			  , #{uPk}
+			  , #{uPkArr}
+			)
+	</insert>
+	
+	<insert id="kakao_insert" parameterType="map">
+		/* insert Kakao - 알림톡 발송  */
+		
+		INSERT INTO castingn_sms.msg_queue
+		(msg_type,dstaddr,callback,stat,
+		subject,text,text2, request_time,k_template_code,k_expiretime,
+		k_button_name,k_button_url,
+		k_next_type,sender_key)
+		VALUES
+		(
+				#{msg_type}
+			  ,	#{dstaddr}			  
+			  , #{callback}
+			  , #{stat}
+			  , #{subject}
+			  , #{text}
+			  , #{text2}
+			  , SYSDATE()
+			  , #{k_template_code}
+			  , #{k_expiretime}
+			  , #{k_button_name}
+			  , #{k_button_url}
+			  , #{k_next_type}
+			  , #{sender_key}
+			)
+	</insert>
+
+	<!-- 사용자 정보 조회  -->
+	<select id="selectUserInfo" parameterType="map" resultType="map">
+		/* selectUserInfo - 사용자 정보 조회 */
+		SELECT
+			U_PK
+		  , U_NAME
+		  , U_TYPE
+		  , U_REGISTRATION_NUMBER
+		FROM USER_INFO
+		WHERE U_Pk = #{uPk}
+	</select>
+
+	<!-- 의뢰건 정보 조회  -->
+	<select id="selectProjectInfo" parameterType="map" resultType="map">
+		/* selectProjectInfo - 의뢰건 정보 조회 */
+		SELECT
+			PR.PR_TITLE
+		  , CategoryName(PR.PR_CATEGORY) AS CATE_NAME
+		  , R_U_PK
+		FROM PROJECT PR
+		WHERE PR.PR_ID = #{stndCd}
+	</select>
+	
+	<!-- 이전 채팅 이력 조회 -->
+	<select id="selectChatHistList" parameterType="map" resultType="map">
+		/* selectChatHistList - 이전 채팅 이력 조회 */
+		SELECT
+			(CASE
+				WHEN CU.CU_U_NAME IS NULL THEN ''
+				ELSE CU.CU_U_NAME
+			END) AS U_NAME
+		  , CD.CD_PK
+		  ,	CD.CD_U_PK
+		  , CD.CD_CONTENT
+		  , CD.CD_ORG_FILE_NM
+		  , CD.CD_NEW_FILE_NM
+		  , CD.CD_FILE_PATH
+		  , CD.CD_CHAT_STAT
+		  , CD.CD_MSG_TYPE
+		  , CD.CD_R_PR_PK
+		  , CD.CD_R_PA_PK
+		  <!-- , DATE_FORMAT(CD.CD_INDATE, '%Y년%m월%d일 %H시%i분') INDATE -->
+		  , DATE_FORMAT(CD.CD_INDATE, '%Y.%m.%d %H:%i') INDATE		  
+		  , (SELECT COUNT(*) FROM CHAT_DETAIL_READ WHERE R_CD_PK = CD.CD_PK AND CDR_READ_YN = 'N') AS CDR_READ_CNT
+		  , CM.CM_CHAT_STAT
+		  , CM.CM_PK
+		FROM CHAT_DETAIL CD
+		LEFT OUTER JOIN
+			CHAT_MASTER CM
+		ON CD.R_CM_PK = CM.CM_PK
+		LEFT JOIN CHAT_USER AS CU ON CU.R_CM_PK = CM.CM_PK AND CU.CU_U_PK = CD.CD_U_PK
+		WHERE 1 = 1
+		AND CM.CM_PK = #{cmPk} 
+        AND (CD.CD_CHAT_STAT='CHAT' OR CD.CD_CHAT_STAT='FILE' OR  ( CD.CD_CHAT_STAT='JOIN' AND CD.CD_MSG_TYPE = 'restart_user' ))
+		<if test="castingnCdpk != null and !castingnCdpk.equals('')">
+			AND CD.CD_PK &lt;= ${castingnCdpk}
+		</if>
+		ORDER BY CD_PK
+	</select>
+
+
+	<!-- 이전 파일 이력 조회 -->
+	<select id="selectChatFileHistList" parameterType="map" resultType="map">
+		/* selectChatFileHistList - 파일읽기 */
+	
+		SELECT
+		(CASE
+		WHEN CU.CU_U_NAME IS NULL THEN ''
+		ELSE CU.CU_U_NAME
+		END) AS U_NAME
+		, CU.CU_U_TYPE
+		, CD.CD_PK
+		, CD.CD_U_PK
+		, CD.CD_CONTENT
+		, CD.CD_ORG_FILE_NM
+		, CD.CD_NEW_FILE_NM
+		, CD.CD_FILE_PATH
+		, CD.CD_CHAT_STAT
+		, CD.CD_MSG_TYPE
+		, (SELECT COUNT(*) FROM CHAT_DETAIL_READ WHERE R_CD_PK = CD.CD_PK AND CDR_READ_YN = 'N') AS CDR_READ_CNT
+		, DATE_FORMAT(CD.CD_INDATE,"%Y.%m.%d") AS CD_INDATE
+		FROM CHAT_DETAIL CD
+		LEFT OUTER JOIN
+		CHAT_MASTER CM
+		ON CD.R_CM_PK = CM.CM_PK
+		LEFT JOIN CHAT_USER AS CU ON CU.R_CM_PK = CM.CM_PK AND CU.CU_U_PK = CD.CD_U_PK
+		WHERE 1 = 1
+		AND CM.CM_PK = #{cmPk} AND (CD.CD_CHAT_STAT='FILE')
+		<if test="isGroup == true">
+			GROUP BY DATE(CD.CD_INDATE)
+		</if>
+		<if test="isGroup == false">
+			AND DATE(CD.CD_INDATE) = DATE(#{inDate})
+		</if>
+		ORDER BY CD_PK
+	</select>
+
+
+	<!-- 채팅방 존재 유무 확인 -->
+	<select id="selectCmPk" parameterType="map" resultType="string">
+		/* selectCmPk - 채팅방 존재 유무 확인 */
+		<!-- SELECT
+			CHAT.CM_PK
+		FROM (
+				SELECT
+					CM.CM_PK
+				  , CU.CU_U_PK
+				FROM CHAT_MASTER CM
+				INNER JOIN
+		           CHAT_USER CU
+		        ON CM.CM_PK = CU.R_CM_PK
+		        AND CU.CU_SVC_CD = #{svcCd}
+				WHERE CM.R_STND_CD = #{stndCd}
+				AND CM.CM_CHAT_TYPE = #{cmChatType}
+				AND CU.CU_U_PK IN (${uPkArr})				
+		) CHAT
+		WHERE 1 = 1
+		<if test="customerUpk != null and !customerUpk.equals('')">
+			AND CHAT.CU_U_PK = #{customerUpk} pUpk에서 고객번호로 변경처리함
+		</if>		
+		LIMIT 0,1 -->
+		
+		SELECT CM_PK 
+		FROM CHAT_MASTER 
+		WHERE CM_PU_PK=#{uPkArr} AND R_STND_CD = #{stndCd} AND CM_CHAT_STAT = '1'
+		LIMIT 1 
+		
+	</select>
+	
+	
+	<!-- 최근 메세지 확인 -->
+	<select id="selectLastChat" parameterType="map" resultType="string">
+		/* selectLastChat - 최근 발송한 메세지 유무 확인 */
+		SELECT CONCAT(TIMESTAMPDIFF(MINUTE, IFNULL(MIN(CD.CD_INDATE),NOW()), NOW()) ,",", 
+              MAX(CM.CM_PU_PK),",", MAX(CM.CM_P_PK),"," ,MAX(CM.R_STND_CD),",",
+              COUNT(CDR.CDR_U_PK), ",", COUNT(CDR1.CDR_U_PK) ) LASTCHAT 
+		  FROM CHAT_MASTER CM
+      LEFT JOIN CHAT_DETAIL CD ON ( CM.CM_PK = CD.R_CM_PK ) 
+      LEFT JOIN CHAT_DETAIL_READ CDR ON ( CD.CD_PK = CDR.R_CD_PK AND CDR.CDR_U_PK = SUBSTRING_INDEX(SUBSTRING_INDEX(CM_PU_PK, ':', 2), ':', -1) AND CDR.CDR_READ_YN = 'N' )
+      LEFT JOIN CHAT_DETAIL_READ CDR1 ON ( CD.CD_PK = CDR1.R_CD_PK AND CDR1.CDR_U_PK = SUBSTRING_INDEX(CM_PU_PK, ':', 1) AND CDR1.CDR_READ_YN = 'N' )
+     WHERE 0=0 
+		   AND CM.CM_PK = #{cmPk}
+		   AND CD_CHAT_STAT = 'CHAT'
+		   <if test="restart.equals('N')">
+		   AND CD_MSG_TYPE = 'normal'
+		   </if>
+	</select>
+
+<!--	&lt;!&ndash; 채팅방 존재 유무 확인 &ndash;&gt;-->
+<!--	<select id="selectCmPk" parameterType="map" resultType="string">-->
+<!--		/* selectCmPk - 채팅방 존재 유무 확인 */-->
+<!--		SELECT-->
+<!--		CHAT.CM_PK-->
+<!--		FROM (-->
+<!--		SELECT-->
+<!--		CM.CM_PK-->
+<!--		, CM.CM_INDATE-->
+<!--		, CU.CU_U_PK-->
+<!--		FROM CHAT_MASTER CM-->
+<!--		INNER JOIN-->
+<!--		CHAT_USER CU-->
+<!--		ON CM.CM_PK = CU.R_CM_PK-->
+<!--		AND CU.CU_SVC_CD = #{svcCd}-->
+<!--		WHERE CM.R_STND_CD = #{stndCd}-->
+<!--		AND CM.CM_CHAT_TYPE = #{cmChatType}-->
+<!--		AND CU.CU_U_PK = #{uPk}-->
+<!--		) CHAT-->
+<!--		WHERE 1 = 1-->
+<!--		<if test="pUpk != null and !pUpk.equals('')">-->
+<!--			AND CHAT.CU_U_PK = #{pUpk}-->
+<!--		</if>-->
+<!--		ORDER BY CHAT.CM_INDATE DESC-->
+<!--		LIMIT 0, 1-->
+<!--	</select>-->
+	
+	<!-- 채팅방 넘버링 조회 -->
+	<select id="selectCmPkNum" parameterType="map" resultType="int">
+		/* selectCmPkNum - 채팅방 넘버링 조회 */
+		SELECT
+			COUNT(*) + 1
+		FROM CHAT_MASTER CM
+		WHERE CM.R_STND_CD = #{stndCd}
+	</select>
+	
+	<!-- 채팅방 참여 확인 -->
+	<select id="selectChatUserCnt" parameterType="map" resultType="int">
+		/* selectChatUserCnt - 채팅방 참여 확인 */
+		SELECT
+			COUNT(*)
+		FROM CHAT_USER
+		WHERE R_CM_PK = #{cmPk}
+		AND CU_U_PK = #{uPk}
+		AND CU_SVC_CD = #{svcCd}
+	</select>
+
+	<!-- 채팅방 참여자 등록 -->
+	<insert id="insertChatUser" parameterType="map">
+		/* insertChatUser - 채팅방 존재 유무 확인 */
+		INSERT INTO
+			CHAT_USER
+		(
+			R_CM_PK
+		  , CU_U_PK
+		  , CU_U_TYPE
+		  , CU_SVC_CD
+		) 
+		VALUES
+		(
+			#{cmPk}
+		  , #{uPk}
+		  , #{userType}
+		  , #{svcCd}
+		)
+		ON DUPLICATE KEY
+		UPDATE CU_SVC_CD = #{svcCd}
+	</insert>
+
+	<!-- 채팅방 참여자 등록(쇼핑몰) -->
+	<insert id="insertMallChatUser" parameterType="map">
+		/* insertChatUser - 채팅방 참여자 등록(쇼핑몰) */
+		INSERT INTO
+			CHAT_USER
+		(
+			R_CM_PK
+		  , CU_U_PK
+		  , CU_U_TYPE
+		  , CU_SVC_CD
+		  , CU_U_NAME
+		) 
+		VALUES
+		(
+			#{cmPk}
+		  , #{uPk}
+		  , #{userType}
+		  , #{svcCd}
+		  , #{uName}
+		)
+		ON DUPLICATE KEY
+		UPDATE CU_SVC_CD = #{svcCd}
+			 , CU_U_NAME = #{uName}	
+	</insert>
+	
+	<!-- 채팅방 참여자 정보 변경 -->
+	<update id="updateChatUser" parameterType="map">
+		/* updateChatUser - 채팅방 참여자 정보 변경 */
+		UPDATE CHAT_USER SET CU_U_NAME = #{uName} WHERE R_CM_PK = #{cmPk} AND CU_U_PK = #{uPk} AND CU_U_TYPE = #{userType} AND CU_SVC_CD = #{svcCd} AND IFNULL(CU_U_NAME, '')=''
+	</update>
+	
+	<!-- 판매자 정보 수정 -->
+	<insert id="updateChatMallUser" parameterType="map">
+		/* updateChatMallUser - 채팅방 참여자 정보 변경 */
+		UPDATE CHAT_USER SET CU_U_NAME = #{uName}, CU_U_TYPE = #{userType}, CU_U_LOGO=#{userLogo} 
+		WHERE R_CM_PK = #{cmPk} AND CU_U_PK = #{uPk} AND CU_SVC_CD = #{svcCd} AND CU_U_TYPE = #{userType}
+	</insert>
+
+	<!-- 채팅 내용 등록 -->
+	<insert id="insertChatDetail" useGeneratedKeys="true" keyProperty="cdPk" parameterType="map">
+		/* insertChatDetail - 채팅 내용 등록 */
+		INSERT INTO
+			CHAT_DETAIL
+		(
+			R_CM_PK
+		  , CD_U_PK
+		  , CD_CONTENT
+		  , CD_CHAT_STAT
+		  , CD_MSG_TYPE
+		  , CD_ORG_FILE_NM
+		  , CD_NEW_FILE_NM
+		  , CD_FILE_PATH
+		  , CD_INDATE
+		  , CD_R_PR_PK
+		  , CD_R_PA_PK
+		)
+		VALUES
+		(
+			 #{cmPk}
+		   , #{uPk}
+		   , #{content}
+		   , #{chatStat}
+		   , IFNULL(#{msgType},'CHAT')
+		   , #{orgFileNm}
+		   , #{newFileNm}
+		   , #{filePath}
+		   , now()
+		   , #{prPk}
+		   , #{paPk}
+		)
+
+	</insert>
+
+	<!-- 채팅 상태 내용 정보 변경 -->
+	<update id="updateMsgTypeDetail" parameterType="map">
+		UPDATE CHAT_DETAIL SET CD_MSG_TYPE = #{msgType} WHERE CD_PK = #{cdPk}
+	</update>
+	
+	<!-- 채팅방 상태 변경 -->
+	<update id="updateStatusChange" parameterType="map">
+		UPDATE CHAT_MASTER SET CM_CHAT_STAT=#{cmStat} WHERE CM_PK = #{cmPk}
+	</update>
+
+	<!-- 채팅 상태 내용 정보 변경 -->
+	<update id="updateMsgTypeAndContentDetail" parameterType="map">
+		UPDATE CHAT_DETAIL SET CD_MSG_TYPE = #{msgType}, CD_CONTENT = #{content} WHERE CD_PK = #{cdPk}
+	</update>
+
+	<update id="updateChatDetailRead" parameterType="map">
+		/* updateChatDetailRead - 채팅 내용 읽기 확인 */
+		UPDATE CHAT_DETAIL_READ
+		SET
+			CDR_READ_YN = 'Y'
+		WHERE R_CD_PK IN (SELECT CD.CD_PK FROM CHAT_DETAIL CD WHERE CD.R_CM_PK = #{cmPk} AND CD.CD_CHAT_STAT IN ('CHAT', 'FILE'))
+		 AND CDR_U_PK IN (${uPk})
+	</update>
+	
+	<select id="selectChatUserList" parameterType="map" resultType="map">
+		/* selectChatUserList - 채팅방별 유저 조회 */
+		SELECT
+			CU.CU_U_PK		AS uPk
+		  , #{cdPk}			AS cdPk
+		FROM CHAT_USER CU
+		WHERE CU.R_CM_PK = #{cmPk}
+		AND CU.CU_U_PK != #{uPk}
+	</select>
+	
+	<insert id="insertChatDetailRead" parameterType="list">
+		/* insertChatDetailRead - 채팅 내용 읽기 확인 등록 */
+    	INSERT INTO
+    		CHAT_DETAIL_READ
+		(
+			R_CD_PK
+		  , CDR_U_PK
+		  , CDR_READ_YN
+		) 
+		VALUES
+		<foreach collection="list" item="item" separator=" , " >
+        	(
+        		${item.cdPk}
+        	  , ${item.uPk}
+        	  , 'N'
+			)
+		</foreach>
+	</insert>
+	
+	<select id="selectChatMessageReadCnt" parameterType="map" resultType="int">
+		/* selectChatMessageReadCnt - 채팅 내용 읽기 확인 카운트 */
+		<!-- SELECT
+			COUNT(*) READ_CNT
+		FROM CHAT_DETAIL_READ
+		WHERE 1 = 1
+		AND CDR_READ_YN = 'N'
+		<if test="cdPk != null and !cdPk.equals('')">
+			AND R_CD_PK = #{cdPk}
+		</if>
+		<if test="cdPk == null or cdPk.equals('')">
+			AND R_CD_PK IN (SELECT CD.CD_PK FROM CHAT_DETAIL CD WHERE CD.R_CM_PK = #{cmPk} AND CD.CD_CHAT_STAT IN ('CHAT', 'FILE'))
+			AND CDR_U_PK IN (#{uPk}) 
+		</if> -->
+		
+		<!-- SELECT COUNT(*) AS COUNT FROM (	
+				SELECT C.R_CM_PK, D.CDR_READ_YN 
+				FROM CHAT_DETAIL C 
+				LEFT JOIN CHAT_DETAIL_READ D 
+				ON C.CD_PK=D.R_CD_PK 
+				WHERE D.CDR_U_PK = #{uPk} AND D.CDR_READ_YN = 'N'
+				AND (CD_CHAT_STAT='FILE' OR CD_CHAT_STAT='CHAT')
+			) X LEFT JOIN (
+				SELECT A.R_CM_PK, B.CM_CHAT_STAT 
+				FROM CHAT_USER A 
+				LEFT JOIN CHAT_MASTER B 
+				ON A.R_CM_PK=B.CM_PK 
+				WHERE CU_U_PK=#{uPk} AND CM_CHAT_STAT='1'
+			) Y
+		ON X.R_CM_PK=Y.R_CM_PK -->
+		
+		SELECT COUNT(*) AS COUNT
+		FROM (	
+			SELECT
+				COUNT(*) AS COUNT
+			FROM CHAT_DETAIL CD
+			LEFT OUTER JOIN CHAT_MASTER CM ON CD.R_CM_PK = CM.CM_PK
+			LEFT JOIN CHAT_USER AS CU ON CU.R_CM_PK = CM.CM_PK AND CU.CU_U_PK = CD.CD_U_PK
+			LEFT JOIN CHAT_DETAIL_READ AS CDR ON CDR.R_CD_PK = CD.CD_PK
+			LEFT JOIN CHAT_LIKE AS CL ON CL.CL_CD_PK = CD.CD_PK
+			WHERE 1 = 1
+			AND (CD.CD_CHAT_STAT='FILE' OR CD.CD_CHAT_STAT='CHAT')
+			AND  CDR.CDR_READ_YN = 'N' AND CDR.CDR_U_PK = #{uPk}
+			GROUP BY CM.CM_PK
+			ORDER BY CD_PK
+		) X
+		
+	</select>
+
+	<!-- 채팅 정보 조회  -->
+	<select id="selectChatDetailInfo" parameterType="map" resultType="map">
+
+		SELECT
+			*
+		FROM CHAT_DETAIL
+		WHERE CD_PK = #{cdPk}
+	</select>
+
+
+	<!-- 방에 해당한 총 채팅갯수 얻기  -->
+	<select id="getTotalCountInRoom" parameterType="map" resultType="int">
+
+		<!-- SELECT
+			COUNT(*) TOTAL_CNT
+		FROM CHAT_DETAIL
+		WHERE CD_U_PK = #{uPk}
+		AND (CD_CHAT_STAT='FILE' OR CD_CHAT_STAT='CHAT') -->		
+		SELECT COUNT(*) AS TOTAL_CNT FROM CHAT_USER WHERE CU_U_PK=#{uPk}		
+		
+		<!-- SELECT COUNT(*) AS COUNT FROM (
+			SELECT R_CM_PK FROM CHAT_DETAIL WHERE CD_CHAT_STAT='FILE' OR CD_CHAT_STAT='CHAT'
+			) A LEFT JOIN (
+			SELECT R_CM_PK FROM CHAT_USER WHERE CU_U_PK=#{uPk}
+			) B ON A.R_CM_PK=B.R_CM_PK -->
+		
+	</select>
+
+	<!-- 상담 종료에 해당한 채팅아이디 얻기  -->
+	<select id="getLastExitMessageId" parameterType="map" resultType="map">
+
+		SELECT
+			CD_PK
+		FROM CHAT_DETAIL
+		WHERE R_CM_PK = #{cmPk} AND CD_MSG_TYPE = 'exit'
+		ORDER BY CD_PK DESC
+		LIMIT 1
+	</select>
+
+	<!-- 거래중  -->
+	<select id="getExitAfterCnt" parameterType="map" resultType="int">
+		/* getExitAfterCnt - 채팅 거래중 */
+		<!-- SELECT
+		COUNT(*) READ_CNT
+		FROM CHAT_DETAIL
+		WHERE R_CM_PK = #{cmPk} AND CD_PK > ${exitId}		
+		AND (CD_CHAT_STAT='FILE' OR CD_CHAT_STAT='CHAT') -->
+		
+		<!-- SELECT COUNT(*) AS COUNT FROM (	
+			SELECT C.R_CM_PK, D.CDR_READ_YN 
+				FROM CHAT_DETAIL C 
+				LEFT JOIN CHAT_DETAIL_READ D 
+				ON C.CD_PK=D.R_CD_PK 
+				WHERE D.CDR_READ_YN = 'Y'
+				AND (C.CD_CHAT_STAT='FILE' OR C.CD_CHAT_STAT='CHAT')
+			) X LEFT JOIN (
+				SELECT A.R_CM_PK, B.CM_CHAT_STAT 
+				FROM CHAT_USER A 
+				LEFT JOIN CHAT_MASTER B 
+				ON A.R_CM_PK=B.CM_PK 
+				WHERE CU_U_PK=#{uPk} AND B.CM_CHAT_STAT='1'
+			) Y
+		ON X.R_CM_PK=Y.R_CM_PK		
+		WHERE Y.CM_CHAT_STAT='1' -->
+		
+		SELECT COUNT(*) AS COUNT
+		FROM (	
+			SELECT COUNT(*) AS COUNT
+			FROM CHAT_DETAIL CD 
+			LEFT OUTER JOIN (
+				SELECT * FROM CHAT_MASTER CM LEFT JOIN CHAT_USER CU ON CM.CM_PK=CU.R_CM_PK WHERE CU.CU_U_PK= #{uPk}
+			) CUM ON CD.R_CM_PK=CUM.CM_PK
+			LEFT JOIN CHAT_DETAIL_READ AS CDR ON CDR.R_CD_PK = CD.CD_PK
+			LEFT JOIN CHAT_LIKE AS CL ON CL.CL_CD_PK = CD.CD_PK
+			WHERE (CD.CD_CHAT_STAT='FILE' OR CD.CD_CHAT_STAT='CHAT') AND CD.R_CM_PK=CUM.CM_PK
+			AND CDR.CDR_READ_YN='Y' AND CUM.CM_CHAT_STAT='1'
+			GROUP BY CUM.CM_PK		
+			ORDER BY CD_PK
+		) X		
+
+	</select>
+
+	<!-- 상담 완료 -->
+	<select id="getExitBeforeCnt" parameterType="map" resultType="int">
+
+		/* getExitBeforeCnt - 채팅 종료 */
+		<!-- SELECT
+		COUNT(*) READ_CNT
+		FROM CHAT_DETAIL
+		WHERE R_CM_PK = #{cmPk} AND CD_PK &lt; ${exitId}		
+		AND (CD_CHAT_STAT='FILE' OR CD_CHAT_STAT='CHAT') -->
+				
+		<!-- SELECT COUNT(*) AS COUNT FROM (	
+			SELECT R_CM_PK
+			FROM CHAT_DETAIL 
+			WHERE CD_CHAT_STAT='FILE' OR CD_CHAT_STAT='CHAT'
+			) X LEFT JOIN (
+				SELECT A.R_CM_PK, B.CM_CHAT_STAT 
+				FROM CHAT_USER A 
+				LEFT JOIN CHAT_MASTER B 
+				ON A.R_CM_PK=B.CM_PK 
+				WHERE CU_U_PK=#{uPk} AND B.CM_CHAT_STAT='0'
+			) Y
+		ON X.R_CM_PK=Y.R_CM_PK
+		WHERE Y.CM_CHAT_STAT='0' -->
+		
+		<!-- SELECT
+			COUNT(*) AS COUNT
+		FROM CHAT_DETAIL CD
+		LEFT OUTER JOIN CHAT_MASTER CM ON CD.R_CM_PK = CM.CM_PK
+		LEFT JOIN CHAT_USER AS CU ON CU.R_CM_PK = CM.CM_PK AND CU.CU_U_PK = CD.CD_U_PK
+		LEFT JOIN CHAT_DETAIL_READ AS CDR ON CDR.R_CD_PK = CD.CD_PK
+		LEFT JOIN CHAT_LIKE AS CL ON CL.CL_CD_PK = CD.CD_PK
+		WHERE 1 = 1
+		AND (CD.CD_CHAT_STAT='FILE' OR CD.CD_CHAT_STAT='CHAT')
+		AND  CU.CU_U_PK = #{uPk} AND CM.CM_CHAT_STAT='0' 
+		ORDER BY CD_PK -->
+		SELECT COUNT(*) AS COUNT
+		FROM (		
+			SELECT COUNT(*) AS COUNT
+			FROM CHAT_DETAIL CD 
+			LEFT OUTER JOIN (
+				SELECT * FROM CHAT_MASTER CM LEFT JOIN CHAT_USER CU ON CM.CM_PK=CU.R_CM_PK WHERE CU.CU_U_PK= #{uPk}
+			) CUM ON CD.R_CM_PK=CUM.CM_PK
+			LEFT JOIN CHAT_DETAIL_READ AS CDR ON CDR.R_CD_PK = CD.CD_PK
+			LEFT JOIN CHAT_LIKE AS CL ON CL.CL_CD_PK = CD.CD_PK
+			WHERE (CD.CD_CHAT_STAT='FILE' OR CD.CD_CHAT_STAT='CHAT') AND CD.R_CM_PK=CUM.CM_PK
+			AND CUM.CM_CHAT_STAT='0'			
+			GROUP BY CUM.CM_PK
+			ORDER BY CD_PK	
+		) X
+				
+	</select>
+
+	<!-- 상담 요청 갯수 얻기  -->
+	<select id="getTalkingRequestCnt" parameterType="map" resultType="int">
+
+		<!-- SELECT
+		COUNT(*) READ_CNT
+		FROM CHAT_DETAIL
+		WHERE R_CM_PK = #{cmPk} AND CD_MSG_TYPE = 'service_question' -->
+
+		<!-- SELECT COUNT(*) AS COUNT FROM (	
+				SELECT R_CM_PK
+				FROM CHAT_DETAIL 
+				WHERE CD_MSG_TYPE='service_question'
+				AND (CD_CHAT_STAT='FILE' OR CD_CHAT_STAT='CHAT')
+			) X LEFT JOIN (
+				SELECT A.R_CM_PK, B.CM_CHAT_STAT 
+				FROM CHAT_USER A 
+				LEFT JOIN CHAT_MASTER B 
+				ON A.R_CM_PK=B.CM_PK 
+				WHERE CU_U_PK=#{uPk} AND CM_CHAT_STAT='1'
+			) Y
+		ON X.R_CM_PK=Y.R_CM_PK
+		WHERE Y.CM_CHAT_STAT='1' -->
+				
+		SELECT COUNT(*) AS COUNT
+		FROM (	
+			SELECT 
+				COUNT(*) AS COUNT
+			FROM CHAT_DETAIL CD 
+			LEFT OUTER JOIN (
+				SELECT * FROM CHAT_MASTER CM LEFT JOIN CHAT_USER CU ON CM.CM_PK=CU.R_CM_PK WHERE CU.CU_U_PK= #{uPk}
+			) CUM ON CD.R_CM_PK=CUM.CM_PK
+			LEFT JOIN CHAT_DETAIL_READ AS CDR ON CDR.R_CD_PK = CD.CD_PK
+			LEFT JOIN CHAT_LIKE AS CL ON CL.CL_CD_PK = CD.CD_PK
+			WHERE (CD.CD_CHAT_STAT='FILE' OR CD.CD_CHAT_STAT='CHAT') AND CD.R_CM_PK=CUM.CM_PK   
+			AND  CUM.CU_U_PK = #{uPk} AND CD.CD_MSG_TYPE = 'service_question' AND CUM.CM_CHAT_STAT = '1'  
+			GROUP BY CUM.CM_PK 
+			ORDER BY CD_PK		
+		) X
+
+	</select>
+
+	<!-- 상담 진행중 갯수 얻기  -->
+	<select id="getTalkingRunCnt" parameterType="map" resultType="int">
+
+		<!-- SELECT
+		COUNT(*) READ_CNT
+		FROM CHAT_DETAIL
+		WHERE R_CM_PK = #{cmPk} AND CD_MSG_TYPE = 'normal' -->
+		
+		<!-- SELECT COUNT(*) AS COUNT FROM (	
+				SELECT R_CM_PK
+				FROM CHAT_DETAIL 
+				WHERE CD_MSG_TYPE='normal'
+				AND (CD_CHAT_STAT='FILE' OR CD_CHAT_STAT='CHAT')
+			) X LEFT JOIN (
+				SELECT A.R_CM_PK, B.CM_CHAT_STAT 
+				FROM CHAT_USER A 
+				LEFT JOIN CHAT_MASTER B 
+				ON A.R_CM_PK=B.CM_PK 
+				WHERE CU_U_PK=#{uPk} AND CM_CHAT_STAT='1'
+			) Y
+		ON X.R_CM_PK=Y.R_CM_PK
+		WHERE Y.CM_CHAT_STAT='1' -->
+		
+		SELECT COUNT(*) AS COUNT
+		FROM (	
+			SELECT 
+			COUNT(*) AS COUNT
+			FROM CHAT_DETAIL CD 
+			LEFT OUTER JOIN (
+				SELECT * FROM CHAT_MASTER CM LEFT JOIN CHAT_USER CU ON CM.CM_PK=CU.R_CM_PK WHERE CU.CU_U_PK= #{uPk}
+			) CUM ON CD.R_CM_PK=CUM.CM_PK
+			LEFT JOIN CHAT_DETAIL_READ AS CDR ON CDR.R_CD_PK = CD.CD_PK
+			LEFT JOIN CHAT_LIKE AS CL ON CL.CL_CD_PK = CD.CD_PK
+			WHERE (CD.CD_CHAT_STAT='FILE' OR CD.CD_CHAT_STAT='CHAT') AND CD.R_CM_PK=CUM.CM_PK
+			AND  CUM.CU_U_PK = #{uPk} AND CD.CD_MSG_TYPE = 'normal' AND CUM.CM_CHAT_STAT = '1'
+			GROUP BY CUM.CM_PK 
+			ORDER BY CD_PK
+		) X
+		
+
+	</select>
+
+	<!-- 견적요청 갯수 얻기  -->
+	<select id="getEstimateSendCnt" parameterType="map" resultType="int">
+
+		<!-- SELECT
+		COUNT(*) READ_CNT
+		FROM CHAT_DETAIL
+		WHERE R_CM_PK = #{cmPk} AND CD_MSG_TYPE = 'estimate_send' -->
+		
+		<!-- SELECT COUNT(*) AS COUNT FROM (	
+				SELECT R_CM_PK
+				FROM CHAT_DETAIL 
+				WHERE CD_MSG_TYPE='estimate_send'
+				AND (CD_CHAT_STAT='FILE' OR CD_CHAT_STAT='CHAT')
+			) X LEFT JOIN (
+				SELECT A.R_CM_PK, B.CM_CHAT_STAT 
+				FROM CHAT_USER A 
+				LEFT JOIN CHAT_MASTER B 
+				ON A.R_CM_PK=B.CM_PK 
+				WHERE CU_U_PK=#{uPk} AND CM_CHAT_STAT='1'
+			) Y
+		ON X.R_CM_PK=Y.R_CM_PK
+		WHERE Y.CM_CHAT_STAT='1' -->
+		
+		SELECT COUNT(*) AS COUNT
+		FROM (	
+			SELECT 
+			COUNT(*) AS COUNT
+			FROM CHAT_DETAIL CD 
+			LEFT OUTER JOIN (
+				SELECT * FROM CHAT_MASTER CM LEFT JOIN CHAT_USER CU ON CM.CM_PK=CU.R_CM_PK WHERE CU.CU_U_PK= #{uPk}
+			) CUM ON CD.R_CM_PK=CUM.CM_PK
+			LEFT JOIN CHAT_DETAIL_READ AS CDR ON CDR.R_CD_PK = CD.CD_PK
+			LEFT JOIN CHAT_LIKE AS CL ON CL.CL_CD_PK = CD.CD_PK
+			WHERE (CD.CD_CHAT_STAT='FILE' OR CD.CD_CHAT_STAT='CHAT') AND CD.R_CM_PK=CUM.CM_PK
+			AND  CUM.CU_U_PK = #{uPk} AND CD.CD_MSG_TYPE = 'estimate_send' AND CUM.CM_CHAT_STAT = '1'
+			GROUP BY CUM.CM_PK 
+			ORDER BY CD_PK
+		) X
+
+	</select>
+
+	<!-- 결제진행 중 갯수 얻기  -->
+	<select id="getEstimateSelectCnt" parameterType="map" resultType="int">
+
+		<!-- SELECT
+		COUNT(*) READ_CNT
+		FROM CHAT_DETAIL
+		WHERE R_CM_PK = #{cmPk} AND CD_MSG_TYPE = 'estimate_select' -->
+		
+		<!-- SELECT COUNT(*) AS COUNT FROM (	
+				SELECT R_CM_PK
+				FROM CHAT_DETAIL 
+				WHERE CD_MSG_TYPE='estimate_select'
+				AND (CD_CHAT_STAT='FILE' OR CD_CHAT_STAT='CHAT')
+			) X LEFT JOIN (
+				SELECT A.R_CM_PK, B.CM_CHAT_STAT 
+				FROM CHAT_USER A 
+				LEFT JOIN CHAT_MASTER B 
+				ON A.R_CM_PK=B.CM_PK 
+				WHERE CU_U_PK=#{uPk} AND CM_CHAT_STAT='1'
+			) Y
+		ON X.R_CM_PK=Y.R_CM_PK
+		WHERE Y.CM_CHAT_STAT='1' -->
+		
+		SELECT COUNT(*) AS COUNT
+		FROM (	
+			SELECT 
+			COUNT(*) AS COUNT
+			FROM CHAT_DETAIL CD 
+			LEFT OUTER JOIN (
+				SELECT * FROM CHAT_MASTER CM LEFT JOIN CHAT_USER CU ON CM.CM_PK=CU.R_CM_PK WHERE CU.CU_U_PK= #{uPk}
+			) CUM ON CD.R_CM_PK=CUM.CM_PK
+			LEFT JOIN CHAT_DETAIL_READ AS CDR ON CDR.R_CD_PK = CD.CD_PK
+			LEFT JOIN CHAT_LIKE AS CL ON CL.CL_CD_PK = CD.CD_PK
+			WHERE (CD.CD_CHAT_STAT='FILE' OR CD.CD_CHAT_STAT='CHAT') AND CD.R_CM_PK=CUM.CM_PK
+			AND  CUM.CU_U_PK = #{uPk} AND CD.CD_MSG_TYPE = 'estimate_select' AND CUM.CM_CHAT_STAT = '1'
+			GROUP BY CUM.CM_PK 
+			ORDER BY CD_PK
+		) X
+
+	</select>
+
+	<!-- 결제완료 갯수 얻기  -->
+	<select id="getSettleOkCnt" parameterType="map" resultType="int">
+
+		<!-- SELECT
+		COUNT(*) READ_CNT
+		FROM CHAT_DETAIL
+		WHERE R_CM_PK = #{cmPk} AND CD_MSG_TYPE = 'settle_ok' -->
+		
+		<!-- SELECT COUNT(*) AS COUNT FROM (	
+				SELECT R_CM_PK
+				FROM CHAT_DETAIL 
+				WHERE CD_MSG_TYPE='settle_ok'
+				AND (CD_CHAT_STAT='FILE' OR CD_CHAT_STAT='CHAT')
+			) X LEFT JOIN (
+				SELECT A.R_CM_PK, B.CM_CHAT_STAT 
+				FROM CHAT_USER A 
+				LEFT JOIN CHAT_MASTER B 
+				ON A.R_CM_PK=B.CM_PK 
+				WHERE CU_U_PK=#{uPk} AND CM_CHAT_STAT='1'
+			) Y
+		ON X.R_CM_PK=Y.R_CM_PK -->
+		SELECT COUNT(*) AS COUNT
+		FROM (	
+			SELECT 
+			COUNT(*) AS COUNT
+			FROM CHAT_DETAIL CD 
+			LEFT OUTER JOIN (
+				SELECT * FROM CHAT_MASTER CM LEFT JOIN CHAT_USER CU ON CM.CM_PK=CU.R_CM_PK WHERE CU.CU_U_PK= #{uPk}
+			) CUM ON CD.R_CM_PK=CUM.CM_PK
+			LEFT JOIN CHAT_DETAIL_READ AS CDR ON CDR.R_CD_PK = CD.CD_PK
+			LEFT JOIN CHAT_LIKE AS CL ON CL.CL_CD_PK = CD.CD_PK
+			WHERE (CD.CD_CHAT_STAT='FILE' OR CD.CD_CHAT_STAT='CHAT') AND CD.R_CM_PK=CUM.CM_PK
+			AND  CUM.CU_U_PK = #{uPk} AND CD.CD_MSG_TYPE = 'settle_ok' AND CUM.CM_CHAT_STAT = '1'
+			GROUP BY CUM.CM_PK 
+			ORDER BY CD_PK
+		) X
+
+	</select>
+	<!-- 채팅방 정보 조회  -->
+	<select id="selectChatMasterInfo" parameterType="map" resultType="map">
+
+		SELECT
+			*
+		FROM CHAT_MASTER
+		WHERE CM_PK = #{cmPk}
+	</select>
+	
+	<!-- 채팅방 정보 조회  -->
+	<select id="selectChatMasterUserInfo" parameterType="map" resultType="map">
+		SELECT * FROM CHAT_MASTER A LEFT JOIN CHAT_USER B ON A.CM_PK=B.R_CM_PK WHERE A.CM_PK=#{cmPk} AND B.CU_U_TYPE=#{userType} LIMIT 0,1
+	</select>
+
+	<!-- 캐스팅엔 연결을 눌렀을때 CD_PK를 얻기  -->
+	<select id="getCDPKByExit" parameterType="map" resultType="map">
+
+		SELECT
+			COUNT(*) AS CT, CASE WHEN CD_PK IS NULL THEN 0
+			ELSE CD_PK END AS CD_PK
+		FROM CHAT_DETAIL
+		WHERE R_CM_PK = #{cmPk} AND CD_MSG_TYPE = 'castingn_requst'
+		ORDER BY CD_PK DESC
+		LIMIT 1
+	</select>
+	
+	<!-- 금칙어 리스트 얻기 -->
+	<select id="selectForbidList" resultType="map">
+		SELECT FORBID_WORD
+		FROM CHAT_FORBID_WORD
+	</select>
+		
+	<!-- 로고등록 -->
+	<update id="updateChatUserInLogo" parameterType="map">
+		/* "udpateChatUserInLogo" - 채팅방 참여자 로고 변경 */
+		UPDATE CHAT_USER SET CU_U_NAME = #{uName}, CU_U_LOGO=#{userLogo} 
+		WHERE R_CM_PK = #{cmPk} AND CU_U_PK = #{uPk} AND CU_U_TYPE = #{userType} AND CU_SVC_CD = #{svcCd}
+	</update>
+	
+	<!-- 채팅방 유저 호출 -->
+	<select id="selectChatUserInfo" parameterType="map" resultType="map">
+		/* selectChatUserInfo - user upk 호출 */
+		SELECT * FROM CAHT_USER WHERE R_CM_PK=#{cmPk} ORDER BY CU_U_TYPE
+	</select>
+	
+	<insert id="insertChatServiceQuestion" parameterType="map">
+		/* insertChatServiceQuestion - 채팅 서비스 문의 요청 등록 */
+		INSERT INTO CHAT_SERVICE_QUESTION
+		       (R_CM_PK, P_UID, QUESTION_INDATE) 
+		VALUES ( #{qCmPk}, #{qPuid}, NOW() )
+		    ON DUPLICATE KEY
+		UPDATE QUESTION_MODATE = NOW()
+				, QUESTION_STAT = '1'			
+	</insert>
+	
+	<update id="updateChatServiceQuestion" parameterType="map">
+		/* insertChatServiceQuestion - 채팅 서비스 문의 요청 상태 변경 */
+		UPDATE CHAT_SERVICE_QUESTION
+		   SET  QUESTION_STAT = #{qQuestionStat}
+		       ,QUESTION_MODATE = NOW()
+		 WHERE R_CM_PK = #{qCmPk}
+		   AND P_UID = #{qPuid}
+	</update>
+	
+	<select id="selectChatServiceQuestion" parameterType="map" resultType="map">
+		/* selectChatServiceQuestion - 채팅 서비스 문의 요청 내역 조회 */
+		SELECT
+		       P.P_UID,
+		       P.P_NAME,
+		       P.P_PRICE_OPTION AS OPTION_NAME,
+		       SUBSTRING_INDEX(PP.PRICE_LIST, ';', 1) AS OPTION_PRICE,
+		       SUBSTRING_INDEX(P.P_OPTION_SPEC, ';', 1) AS OPTION_DESC,
+		       CONCAT( 'https://mall.castingn.com/casting/data/casting/Product_images/', P.P_image_dir, '/', P.P_image) AS LOGO,
+		       Q.QUESTION_STAT
+		  FROM CHAT_SERVICE_QUESTION Q
+		 INNER JOIN casting.Plaza_product_service P
+		    ON (Q.P_UID = P.P_UID)
+		  LEFT JOIN casting.Plaza_product_partner PP 
+		    ON (P.P_UID = PP.P_UID)
+		 WHERE 0 = 0 
+		   AND P.P_APPROVAL = 'ok' 
+		   AND P.P_STATUS = 'ok' 
+		   AND Q.QUESTION_STAT = '1'
+		   AND Q.R_CM_PK = #{qCmPk}
+	</select>	
+	
+</mapper>

@@ -1,0 +1,44 @@
+@charset "utf-8";
+.request-partner-img{
+    width: 100%;
+    height: auto;
+}
+
+.request-parter-ID{
+    font-weight: bold;
+}
+
+.modal-content .normal-text{
+    font-weight: normal;
+}
+
+.modal-content textarea{
+    width: 100%;
+    border: solid 1px #abaebb;
+}
+
+.modal-content button{
+    border: solid 1px #abaebb;
+    padding: 10px;
+}
+
+.modal-content input{
+    border: solid 1px #abaebb;
+}
+
+.btn-file{
+    cursor: pointer;
+}
+
+.btn-close{
+    background: url(../images/ico-x.png) center no-repeat;
+    background-size: 15px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 34px;
+    height: 34px;
+    font-size: 0;
+    line-height: 0;
+    display: block;
+}

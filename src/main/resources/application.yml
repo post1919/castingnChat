@@ -1,0 +1,76 @@
+spring:
+  redis:
+    host: 13.209.191.10
+    port: 6379
+    password: sotkfkd0!
+    session:
+      store-type: redis
+      redis:
+        flush-mode: on_save # 세션 플러시 모드.세션
+
+#### DB 정보
+castingn:
+  datasource:
+    chat:
+      driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+      jdbc-url: jdbc:log4jdbc:mysql://13.124.245.226:3306/castingn?characterEncoding=UTF-8&serverTimezone=UTC
+#      jdbc-url: jdbc:log4jdbc:mysql://192.168.99.166:3306/castingn?characterEncoding=UTF-8&serverTimezone=UTC
+      #jdbc-url: jdbc:log4jdbc:mysql://castingn-mysql.ck5zpynlgs85.ap-northeast-2.rds.amazonaws.com:3306/castingn?characterEncoding=UTF-8&serverTimezone=UTC
+      username: albatross
+#      username: root
+      password: sotkfkd0!
+#      password:
+      mybatis-config-path: classpath:mybatis/mybatis-config.xml
+      mybatis-mapper-locations: classpath:castingn/mapper/**/*.xml
+#    mall:
+#      driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+#      jdbc-url: jdbc:log4jdbc:mysql://13.124.245.226:3306/casting?characterEncoding=UTF-8&serverTimezone=UTC
+#      testWhileIdle: true
+#      validationQuery : select 1
+#      timeBetweenEvictionRunsMillis : 600000      
+#      jdbc-url: jdbc:log4jdbc:mysql://192.168.99.166:3306/castingn?characterEncoding=UTF-8&serverTimezone=UTC
+      #jdbc-url: jdbc:log4jdbc:mysql://castingn-mysql.ck5zpynlgs85.ap-northeast-2.rds.amazonaws.com:3306/castingn?characterEncoding=UTF-8&serverTimezone=UTC
+#      username: casting
+#      username: root
+#      password: casting(!)
+#      password:
+#      mybatis-config-path: classpath:mybatis/mybatis-config.xml
+#      mybatis-mapper-locations: classpath:castingn/mapper/mall/**/*.xml
+  fileStorePath: C:/chat/file/
+#  fileStorePath: /var/www/chat/file/
+##############
+
+### tomcat
+server:
+  port: 8081
+  #port: 18443
+  error:
+    ## 개발모드 default
+    include-stacktrace: always
+    whitelabel:
+      enabled: true
+  tomcat:
+    uri-encoding: UTF-8
+  servlet:
+    jsp:
+      init-parameters:
+        development: true
+    session:
+      cookie:
+        domain: castingn.com #서브도메인 mall.castingn.com / chat.castingn.com 같은 세션 사용하기 위함
+        http-only: true
+        path: /
+
+### log level
+logging:
+  level:
+    org.springframework : error
+    org.springframework.web : error
+    jdbc:
+      audit: off
+      resultset: off
+      resultsettable: off
+      sqlonly: DEBUG
+      sqltiming: off
+        
+    

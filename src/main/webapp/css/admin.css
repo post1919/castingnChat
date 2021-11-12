@@ -1,0 +1,38 @@
+@charset "utf-8";
+.file-item{
+    font-size: 12px;
+    font-weight: 500;
+    color: #6c6c6c;
+    position: relative;
+    display: block;
+    margin-bottom: 8px;
+}
+.file-item .date{ font-size: 14px; color: #6c6c6c; margin: 8px 0px; }
+.file-item .file-info{ margin-top: 8px; }
+.file-item .file-info p{
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.memo-create { border-bottom: 1px solid darkgray; padding: 0px 8px; padding-bottom: 16px;}
+.memo-create .date{ font-size: 14px; color: #6c6c6c; margin-bottom: 8px;}
+.memo-create .create textarea{ border: 1px solid darkgray; width: 100%; font-size: 12px; color: #6c6c6c; resize: none;}
+.memo-create button{ padding: 0px 8px; background: darkgray; color: white; }
+.memo-list{ padding: 8px;}
+.memo-item{
+    font-size: 12px;
+    font-weight: 500;
+    color: #6c6c6c;
+    position: relative;
+    display: block;
+    margin-bottom: 8px;
+}
+.memo-item .date{ font-size: 14px; color: #6c6c6c; margin: 8px 0px; }
+.memo-item .memo-info{ margin-top: 8px; }
+.memo-item .memo-info .memo-text p{
+    overflow-wrap: anywhere;
+}
+.memo-item .memo-info button { padding: 0px 8px; background: darkgray; color: white;}

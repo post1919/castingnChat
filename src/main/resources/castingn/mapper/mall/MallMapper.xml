@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="castingn.com.chat.mapper.mall.MallMapper">
+
+	<!-- 사용자 정보 조회  -->
+	<select id="selectMallCustomerInfo" parameterType="map" resultType="map">
+		/* "selectMallCustomerInfo" - 사용자 정보 조회 */
+		SELECT M_PK AS U_PK
+			   , Name AS U_NAME
+			   , 1 AS U_TYPE
+			   , company_no AS U_REGISTRATION_NUMBER
+			   , MobileNo AS U_mobile
+			   , Email
+	 	 FROM casting.Plaza_member
+		WHERE M_PK = #{uPK}
+		union all
+		SELECT MS_PK AS U_PK
+			  , Name AS U_NAME
+			  , 1 AS U_TYPE
+			  , '' AS U_REGISTRATION_NUMBER
+			  , Mobile
+		      , Email
+		 FROM casting.Plaza_sub_member
+		WHERE MS_PK = #{uPK}
+	</select>
+	
+	<select id="selectMallMemberInfo" parameterType="map" resultType="map">
+		/* "selectMallMemberInfo" - 사용자 정보 조회 */
+		SELECT
+			M_PK AS U_PK
+			, Name AS U_NAME
+			, 1 AS U_TYPE
+			, '' AS U_REGISTRATION_NUMBER
+		FROM casting.Plaza_member
+		WHERE M_PK = #{uPk}
+	</select>
+	
+	<select id="selectMallSubMemberInfo" parameterType="map" resultType="map">
+		/* "selectMallSubMemberInfo" - 하위 사용자 정보 조회 */
+		SELECT
+			MS_PK AS U_PK
+			, Name AS U_NAME
+			, 2 AS U_TYPE
+			, '' AS U_REGISTRATION_NUMBER
+		FROM casting.Plaza_sub_member
+		WHERE MS_PK = #{uPk}
+	</select>
+	
+	<select id="selectMallCompanyInfo" parameterType="map" resultType="map">
+		/* "selectMallCompanyInfo" - 파트너사 정보 조회 */
+		SELECT C_uid AS U_PK
+			 , C_name AS C_NAME
+			 , C_damdang_name AS U_NAME
+			 , 4 AS U_TYPE
+			 , C_regno AS U_REGISTRATION_NUMBER
+			 ,case when C.C_damdang_phone = '' then C.c_phone_user ELSE C.C_damdang_phone END C_mobile
+          ,C_email
+	  FROM casting.Company C
+	 WHERE C_uid = #{cPK}
+	</select>
+	
+	<select id="selectMallAdminInfo" parameterType="map" resultType="map">
+		/* "selectMallAdminInfo" - 관리자 정보 조회 */
+		SELECT
+			MM_PK AS U_PK
+			, MANAGE_MEMBER_NAME AS U_NAME
+			, 11 AS U_TYPE
+			, '' AS U_REGISTRATION_NUMBER
+		FROM casting.MANAGE_MEMBER
+		WHERE MM_PK = #{uPk}
+	</select>
+	
+	<!-- 서비스 상품 정보 조회 -->
+	<select id="selectMallProductInfo" parameterType="map" resultType="map">
+		/* selectMallProductInfo - 사용자 정보 조회 */
+		SELECT P_name AS PR_TITLE
+			, PD.Name AS CATE_NAME
+		FROM casting.Plaza_product_service AS PP
+		LEFT JOIN casting.Plaza_dir_service AS PD ON PP.P_dir = PD.Dir
+		WHERE PP.P_code = #{stndCd}
+	</select>
+
+</mapper>

@@ -1,0 +1,167 @@
+@charset 'UTF-8';
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-weight: 100;
+  src: url('../fonts/noto-sans-kr-v13-latin_korean-100.eot'); /* IE9 Compat Modes */
+  src: local(''),
+       url('../fonts/noto-sans-kr-v13-latin_korean-100.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/noto-sans-kr-v13-latin_korean-100.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/noto-sans-kr-v13-latin_korean-100.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/noto-sans-kr-v13-latin_korean-100.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/noto-sans-kr-v13-latin_korean-100.svg#NotoSansKR') format('svg'); /* Legacy iOS */
+}
+/* noto-sans-kr-300 - latin_korean */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-weight: 300;
+  src: url('../fonts/noto-sans-kr-v13-latin_korean-300.eot'); /* IE9 Compat Modes */
+  src: local(''),
+       url('../fonts/noto-sans-kr-v13-latin_korean-300.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/noto-sans-kr-v13-latin_korean-300.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/noto-sans-kr-v13-latin_korean-300.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/noto-sans-kr-v13-latin_korean-300.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/noto-sans-kr-v13-latin_korean-300.svg#NotoSansKR') format('svg'); /* Legacy iOS */
+}
+/* noto-sans-kr-regular - latin_korean */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/noto-sans-kr-v13-latin_korean-regular.eot'); /* IE9 Compat Modes */
+  src: local(''),
+       url('../fonts/noto-sans-kr-v13-latin_korean-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/noto-sans-kr-v13-latin_korean-regular.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/noto-sans-kr-v13-latin_korean-regular.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/noto-sans-kr-v13-latin_korean-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/noto-sans-kr-v13-latin_korean-regular.svg#NotoSansKR') format('svg'); /* Legacy iOS */
+}
+/* noto-sans-kr-500 - latin_korean */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-weight: 500;
+  src: url('../fonts/noto-sans-kr-v13-latin_korean-500.eot'); /* IE9 Compat Modes */
+  src: local(''),
+       url('../fonts/noto-sans-kr-v13-latin_korean-500.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/noto-sans-kr-v13-latin_korean-500.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/noto-sans-kr-v13-latin_korean-500.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/noto-sans-kr-v13-latin_korean-500.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/noto-sans-kr-v13-latin_korean-500.svg#NotoSansKR') format('svg'); /* Legacy iOS */
+}
+/* noto-sans-kr-700 - latin_korean */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../fonts/noto-sans-kr-v13-latin_korean-700.eot'); /* IE9 Compat Modes */
+  src: local(''),
+       url('../fonts/noto-sans-kr-v13-latin_korean-700.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/noto-sans-kr-v13-latin_korean-700.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/noto-sans-kr-v13-latin_korean-700.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/noto-sans-kr-v13-latin_korean-700.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/noto-sans-kr-v13-latin_korean-700.svg#NotoSansKR') format('svg'); /* Legacy iOS */
+}
+/* noto-sans-kr-900 - latin_korean */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-weight: 900;
+  src: url('../fonts/noto-sans-kr-v13-latin_korean-900.eot'); /* IE9 Compat Modes */
+  src: local(''),
+       url('../fonts/noto-sans-kr-v13-latin_korean-900.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/noto-sans-kr-v13-latin_korean-900.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/noto-sans-kr-v13-latin_korean-900.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/noto-sans-kr-v13-latin_korean-900.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/noto-sans-kr-v13-latin_korean-900.svg#NotoSansKR') format('svg'); /* Legacy iOS */
+}
+
+* {outline:none; font-size: inherit; line-height: inherit}
+body,button,dd,dl,dt,fieldset,form,h1,h2,h3,h4,h5,h6,input,legend,li,ol,p,select,table,td,textarea,th,ul {
+    margin: 0;
+    padding: 0
+}
+
+body,button,input,select,table,textarea {
+    font-family: "Noto Sans KR",helvetica,'Apple SD Gothic Neo',sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    color: inherit;
+}
+
+
+textarea {
+    word-wrap: break-word;
+    word-break: keep-all;
+    border: 0;
+    background-color: transparent;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden
+}
+
+button,input {
+    border: 0;
+    border-radius: 0;
+	outline:none;
+}
+
+button {
+    background-color: transparent;
+	cursor:pointer;
+}
+
+fieldset,img {
+    border: 0
+}
+
+img {
+    vertical-align: top;
+	max-width:100%;
+}
+
+ol,ul {
+    list-style: none
+}
+
+address,em {
+    font-style: normal
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+	outline:none;
+}
+
+iframe {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    vertical-align: top;
+    border: 0
+}
+
+mark {
+    background-color: transparent
+}
+
+i {
+    font-style: normal
+}
+
+
+select {
+	-webkit-appearance: none;  /* 네이티브 외형 감추기 */
+	-moz-appearance: none;
+	appearance: none;
+	background: #fff url(../images/select-arrow.png) calc(100% - 12px) no-repeat;  /* 화살표 모양의 이미지 */
+	min-width:120px; height:40px; border:1px solid #cfd4dd; padding: 0 25px 0 15px; box-sizing:border-box; border-radius:2px; font-size:14px; color:#555;outline:none;
+}
+
+/* IE 10, 11의 네이티브 화살표 숨기기 */
+select::-ms-expand {
+    display: none;
+}
+
+table {border-collapse:collapse; width:100%;}
